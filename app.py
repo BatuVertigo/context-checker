@@ -74,8 +74,9 @@ def _load_prompt(filename: str) -> str:
 
 
 # Promptlar ayrı .md dosyalarında tutulur (koda dokunmadan düzenlenebilsin diye).
-VERSION_CHECK_PROMPT = _load_prompt("version_check_prompt.md")
-BUG_DETAILS_PROMPT = _load_prompt("bug_details_prompt.md")
+# Her özellik kendi klasöründe (örn. "Bug Watcher", "Release History" ile aynı düzen).
+VERSION_CHECK_PROMPT = _load_prompt("Version Check/version_check_prompt.md")
+BUG_DETAILS_PROMPT = _load_prompt("Bug Details/bug_details_prompt.md")
 
 # Alt-süreç SAF bir motor olmalı: hiçbir MCP sunucusu (Slack dahil) ve hiçbir
 # dahili araç çalıştıramasın. Aksi halde agentic `claude`, gelen mesajı bir
@@ -252,6 +253,32 @@ def _build_transcript(client, messages: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def _thread_permalink(client, channel: str, thread_ts: str) -> str | None:
+    """Thread kök mesajının kalıcı Slack linkini döndür (başarısızsa None)."""
+    try:
+        return client.chat_getPermalink(channel=channel, message_ts=thread_ts)["permalink"]
+    except Exception:
+        logger.exception("Permalink alınamadı (thread_ts=%s)", thread_ts)
+        return None
+
+
+def _with_slack_link(result: str, permalink: str | None) -> str:
+    """Modelin (varsa placeholder) 'Slack thread:' satırını at, gerçek linki ekle.
+
+    Link'i model üretmez; burada deterministik olarak eklenir — böylece URL asla
+    kırpılmaz/bozulmaz. Model yine de bir 'Slack thread:' satırı yazdıysa temizlenir.
+    """
+    lines = result.rstrip().splitlines()
+    while lines and lines[-1].strip().lower().startswith("slack thread:"):
+        lines.pop()
+    while lines and not lines[-1].strip():   # sondaki boş satırları da temizle
+        lines.pop()
+    body = "\n".join(lines)
+    if not permalink:
+        return body
+    return f"{body}\n\nSlack thread: {permalink}"
+
+
 def _modal(blocks: list[dict]) -> dict:
     return {
         "type": "modal",
@@ -309,6 +336,8 @@ def handle_bug_details(ack, shortcut, client):
                 BUG_DETAILS_PROMPT, transcript, CLAUDE_OPUS_MODEL,
                 BUG_DETAILS_TIMEOUT, BUG_DETAILS_EFFORT,
             ) or "Opus yanıtı alınamadı (loga bak)."
+            # Slack linkini model değil, biz ekliyoruz (gerçek permalink, hiç kırpılmadan).
+            result = _with_slack_link(result, _thread_permalink(client, channel, thread_ts))
     except Exception:
         logger.exception("Bug details üretimi başarısız (thread_ts=%s)", thread_ts)
         result = "Bir hata oluştu, task üretilemedi. (Detay için loga bak.)"

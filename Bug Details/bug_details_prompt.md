@@ -33,11 +33,17 @@ hazır bir bug task çıktısı üretmek.
 1. Bug'ın ne olduğu — kısa, net açıklama.
 2. Aslında ne olması gerektiği — thread'den anlaşılıyorsa kısa cümle; yoksa tam
    olarak `aslında ne olmalı?` yaz.
-3. Repro adımları — thread'den çıkarılabiliyorsa `Repro adımları:` satırı + altına
-   numaralı kısa adımlar; çıkarılamıyorsa tam olarak `repro?` yaz.
+3. Repro — thread'den çıkarılabiliyorsa: tek bir cümlede ifade edilebiliyorsa tek
+   cümle yaz (örn. `Shop'taki Weapon Offer'lardan biri satın alınarak repro
+   edilebilir.`). SADECE gerçekten çok adımlı / kompleks bir akışsa `Repro adımları:`
+   satırı + altına numaralı kısa adımlar yaz. Çıkarılamıyorsa tam olarak `repro?` yaz.
    (Başlıkta `Repro needed` varsa bu maddeyi TAMAMEN atla.)
 4. Sürüm/ortam — bug'ın nerede görüldüğünü kısa bir cümleyle yaz (aşağıdaki
-   kurala göre); bilgi yoksa tam olarak `sürüm?` yaz.
+   kurala göre); bilgi yoksa tam olarak `sürüm/build?` yaz.
+
+**Slack thread linki:** Bu satırı SEN EKLEME. Sistem, ürettiğin çıktının en sonuna
+thread'in gerçek Slack linkini `Slack thread: <URL>` olarak otomatik ekler. Sen
+sadece yukarıdaki maddeleri üret; çıktının sonuna `Slack thread:` satırı YAZMA.
 
 ## Sürüm/ortam cümlesi
 
@@ -49,7 +55,7 @@ hazır bir bug task çıktısı üretmek.
 - Bug'ın yayında/canlıda HALA DEVAM ETTİĞİ thread'den anlaşılıyorsa bunu açıkça
   belirt: `Yayında hala devam ediyor.` (sürüm biliniyorsa
   `Yayında (v1.3503) hala devam ediyor.`).
-- Hiç bilgi yoksa → `sürüm?`
+- Hiç bilgi yoksa → `sürüm/build?`
 
 ## Örnek 1 (bilgi az)
 
@@ -64,15 +70,24 @@ MEDIUM - Mythic Armor Set Visual Issue
 LOW - Dragonflame weapon window visual issue
 - Dragonflame window'una girince silahın tamamı hemen yüklenmiyor.
 - Window'a girildiğinde silah tamamen ve anında yüklenmeli.
-- Repro adımları:
-  1. Envantere gir.
-  2. Dragonflame'in window'una gir.
-  3. Silahın tam yüklenmediğini gözlemle.
-- sürüm?
+- Envanterde Dragonflame'in window'una girilerek repro edilebilir.
+- sürüm/build?
 
 ## Örnek 3 (thread'de repro bulunamadı denmiş)
 
 Repro needed - severity? - Random crash on map load
 - Bazı oyuncularda harita yüklenirken rastgele crash oluyor.
 - aslında ne olmalı?
-- sürüm?
+- sürüm/build?
+
+## Örnek 4 (repro gerçekten çok adımlı)
+
+HIGH - Clan war rewards not granted after rejoining
+- Clan war sırasında clan'dan çıkıp tekrar girince maç sonu ödülleri verilmiyor.
+- Rejoin sonrası oyuncuya hak ettiği clan war ödülleri verilmeli.
+- Repro adımları:
+  1. Aktif bir clan war sırasında clan'dan çık.
+  2. Aynı clan'a tekrar katıl.
+  3. Clan war maçını tamamla.
+  4. Maç sonu ödüllerinin verilmediğini gözlemle.
+- v1.3503 release'inde görüldü.
